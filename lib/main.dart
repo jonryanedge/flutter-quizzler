@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+import 'quiz_brain.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() => runApp(Quizzler());
 
@@ -25,19 +29,60 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
+
+  List<Icon> scoreKeeper = [];
+
+  void checkAnswer(bool userAnswer) {
+    bool correctAnswer = quizBrain.getQuestionAnswer();
+
+    if (correctAnswer == userAnswer){
+      print('user got it right');
+      scoreKeeper.add(Icon(Icons.check, color: Colors.green,));
+    } else {
+      print('wrong!');
+      scoreKeeper.add(Icon(Icons.close, color: Colors.red,));
+    }
+
+    setState(() {
+      if ( quizBrain.isFinished() == true ) {
+        Alert(
+            context: context,
+            title: "Quizzler",
+            desc: "No more quiz",
+//            buttons: [
+//              DialogButton(
+//                child: Text(
+//                  'What now?',
+//                ),
+//                onPressed: () => Navigator.pop(context),
+//              ),
+//            ],
+        ).show();
+        quizBrain.reset();
+        scoreKeeper = [];
+      } else {
+        quizBrain.nextQuestion();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: scoreKeeper,
+        ),
         Expanded(
           flex: 5,
           child: Padding(
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                'This is where the question text will go.',
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -47,44 +92,55 @@ class _QuizPageState extends State<QuizPage> {
             ),
           ),
         ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              textColor: Colors.white,
-              color: Colors.green,
-              child: Text(
-                'True',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20.0,
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(5.0),
+                child: Container(
+                  height: 200.0,
+                  child: FlatButton(
+                    textColor: Colors.white,
+                    color: Colors.green,
+                    child: Text(
+                      'True',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20.0,
+                      ),
+                    ),
+                    onPressed: () {
+                      //The user picked true
+                      checkAnswer(true);
+                    },
+                  ),
                 ),
               ),
-              onPressed: () {
-                //The user picked true.
-              },
             ),
-          ),
-        ),
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.all(15.0),
-            child: FlatButton(
-              color: Colors.red,
-              child: Text(
-                'False',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  color: Colors.white,
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(5.0),
+                child: Container(
+                  height: 200.0,
+                  child: FlatButton(
+                    color: Colors.red,
+                    child: Text(
+                      'False',
+                      style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () {
+                      //The user picked false.
+                      checkAnswer(false);
+                    },
+                  ),
                 ),
               ),
-              onPressed: () {
-                //The user picked false.
-              },
             ),
-          ),
+          ],
         ),
-        //TODO: Add a Row here as your score keeper
       ],
     );
   }
